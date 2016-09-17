@@ -6,17 +6,15 @@ import sys
 import codecs
 import re
 import xml.etree.cElementTree as ET
+import lxml.etree
+parser = lxml.etree.XMLParser(recover=True)
 import re        
-import time 
-global errors , doubles , scann , noscann
-scann   = []
-errors  = []
-doubles = []
-noscann = []
 
-def wrm():
-    
-    pass
+global scann , noscann ,error , double
+scann   = []
+noscann = []
+error = []
+double = []
         
 try:
     approot = os.path.dirname(os.path.abspath(__file__))
@@ -24,31 +22,49 @@ except NameError:  # We are the main script, not a module
     approot = os.path.dirname(os.path.abspath(sys.argv[0]))
 current_dir = approot
 class HelloWorld(object):
-    global errors , doubles , scann , noscann
+    global scann , noscann ,error , double
+    scann = []
+    noscann = []
+    error = []
+    double = []
     @cherrypy.expose
     def check(self,stext =None):
         if (os.path.isfile('./uploads/rep.xml')):
             page = ''.join(codecs.open('check.html','r','utf-8').readlines())
-            page = page.replace('{{res}}'.decode("utf-8"),'%d'%len(noscann))
-            XML_FILE = open('./uploads/rep.xml','r')
-            tree = ET.ElementTree(file = XML_FILE)
+            page = page.replace('{{res}}'.decode("utf-8"),'%s'%','.join(noscann))
+            tree = lxml.etree.parse('./uploads/rep.xml', parser)
             root = tree.getroot()
+            before = [len(scann),len(noscann)]
 
             if stext:
                 for child in root.iter():
-                    if len(re.findall(u'[A-Z]{4}/\d{6}/%04d/\d{2}'%int(stext), child.attrib.get('RefNo','')))>0:
-                        scann.count(child.attrib) == 0 and scann.append(child.attrib)
-                        scann.count(child.attrib) == 1 and doubles.append(child.attrib.get('RefNo',''))
-                        scann.count(child.attrib) ==-1 and errors.append(stext)
+                    try:
+                        if len(re.findall(u'[A-Z]{4}/\d{6}/%04d/\d{2}'%int(stext), child.attrib.get('RefNo','')))>0:
+                            if child.attrib.get('status', '') == 'scann':
+                                double.append(child.attrib.get('RefNo',''))
+                            if  child.attrib.get('status','') == 'noscann' :
+                                scann.append(child.attrib.get('RefNo',''))
+                                noscann.remove(child.attrib.get('RefNo',''))
+                                child.set('status', 'scann')
+                                try:
+                                    tree.write('./uploads/rep.xml')
+                                except:
+                                    pass
+                    except Exception as err:
+                        return u'%s'%(stext,err)
+                if before == [len(scann),len(noscann)]:
+                    if error.count(stext)==0:
+                        error.append(stext)
+
+
+
+
                         
-                        child.attrib['status'] ='scann'
-                        
-            tree.write('./uploads/rep.xml')
-            XML_FILE.close()
-                        
-            page = page.replace('{{scan}}'.decode("utf-8"),'%d'%len(scann))
-            page = page.replace('{{double}}'.decode("utf-8"),'%s'%('<br>'.join((doubles))))
-            page = page.replace('{{error}}'.decode("utf-8"),'%d'%len(errors))
+            #page = page.replace('{{scan}}'.decode("utf-8"),'%s'%,''.join(scann))
+            page = page.replace('{{double}}'.decode("utf-8"),'%s'%','.join(double))
+            page = page.replace('{{error}}'.decode("utf-8"),'%s'%','.join(error))
+            page = page.replace('{{current}}'.decode("utf-8"),'%s'%stext)
+
             return page
         return 'А вы загрузили файл ? '
     
@@ -60,11 +76,11 @@ class HelloWorld(object):
     @cherrypy.expose
     @cherrypy.tools.allow(methods=['POST'])
     def fileloader(self,upl):
-        global errors , doubles , scann , noscann
+        global scann, noscann, error, double
         scann   = []
-        errors  = []
-        doubles = []
         noscann = []
+        error = []
+        double = []
         myFile = upl
         size = 0
         
@@ -90,9 +106,10 @@ class HelloWorld(object):
                     if len(child.attrib)>0:
                         if child.attrib.get('status','')=='' or child.attrib.get('status','')=='noscann':
                             child.attrib['status'] = 'noscann'
-                            noscann.append(child.attrib)
-                        if child.attrib.get('status','')=='scan':
-                            scann.append(child.attrib)
+                            noscann.append(child.attrib.get('RefNo',''))
+                        if child.attrib.get('status','')=='scann':
+                            scann.append(child.attrib.get('RefNo',''))
+
                         pass
                     pass
                 tree.write('./uploads/rep.xml')

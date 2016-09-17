@@ -8,19 +8,26 @@
 <body>
 
   <form id='chechForm' action = '/check'  method="post">
-  <input type="search" id="stext" name="stext" value="" autofocus />
+  <input type="search" id="stext" name="stext" value="" autofocus /></form>
+   <div class ='current'>
+     <div class="head"><h3>Текущий запрос</h3></div>
+    {{current}}
+   </div>
+
+
   <div class = 'noScann'>
   {{res}}
   </div>
-  <div>
+  <!--div class = 'Scann'>
   {{scan}}
-  </div>
-  <div>
+  </--div-->
+  <div class = 'error'>
   {{error}}
   </div>
-  <div>
+  <div class = 'double'>
   {{double}}
   </div>
+
 </body>
 		<footer>
            <h2>Технологии в интресах каждого</h2>
