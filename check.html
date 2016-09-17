@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>Petrov Defense</title>
+<link href="static/style.css" rel="stylesheet" />
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/1.9.1/jquery.min.js"></script>
+</head>
+<body>
+
+  <form id='chechForm' action = '/check'  method="post">
+  <input type="search" id="stext" name="stext" value="" autofocus />
+  <div class = 'noScann'>
+  {{res}}
+  </div>
+  <div>
+  {{scan}}
+  </div>
+  <div>
+  {{error}}
+  </div>
+  <div>
+  {{double}}
+  </div>
+</body>
+		<footer>
+           <h2>Технологии в интресах каждого</h2>
+        </footer>
+<script>
+$( "#chechForm" ).submit(function( event ) {
+  var a = $('input[type="search"]').val()
+  if (a.length == 19){return send( a.substr(12,4))}
+  if (a.length == 14){return send( a.substr(10,4)) }
+  if (a.length == 4){ return send(a)}
+  event.preventDefault();
+});
+function send(a){
+ 	
+$.post( "../check", { 'stext': a} );
+}
+</script>
+</html>
