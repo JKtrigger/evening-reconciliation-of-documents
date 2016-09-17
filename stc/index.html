@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html>
+
+	<head>
+		<meta charset="utf-8"/>
+		<title>Petrov Defense</title>
+
+		<!-- Google web fonts -->
+		
+
+		<!-- The main CSS file -->
+		<link href="static/style.css" rel="stylesheet" />
+	</head>
+
+	<body>
+
+		<form id="upload" method="post" action="/fileloader" enctype="multipart/form-data">
+			<div id="drop">
+				Drop Here
+
+				<a>Browse</a>
+				<input type="file" name="upl" multiple />
+			</div>
+
+			<ul>
+				<!-- The file uploads will be shown here -->
+			</ul>
+
+		</form>
+
+		<footer>
+            <h2>Технологии в интресах каждого</h2>
+            
+        </footer>
+        
+		<!-- JavaScript Includes -->
+		<script src="https://ajax.googleapis.com/ajax/libs/jquery/1.9.1/jquery.min.js"></script>
+		<script src="static/jquery.knob.js"></script>
+
+		<!-- jQuery File Upload Dependencies -->
+		<script src="static/jquery.ui.widget.js"></script>
+		<script src="static/jquery.iframe-transport.js"></script>
+		<script src="static/jquery.fileupload.js"></script>
+		
+		<!-- Our main JS file -->
+		<script src="static/script.js"></script>
+
+
+		
+
+	</body>
+</html>
