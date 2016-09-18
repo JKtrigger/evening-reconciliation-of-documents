@@ -5,18 +5,23 @@ import os
 import sys
 import codecs
 import re
+import datetime
 import xml.etree.cElementTree as ET
 import lxml.etree
 parser = lxml.etree.XMLParser(recover=True)
-import re        
+
+import re
 
 global scann , noscann ,error , double
 scann   = []
 noscann = []
 error = []
 double = []
-        
+d = datetime.datetime.now()
+ht = lambda :['%02d'%datetime.datetime.now().hour ,'%02d'%datetime.datetime.now().minute,'%02d'%datetime.datetime.now().second]
 try:
+    tree = lxml.etree.parse('./uploads/rep.xml', parser)
+    logFile = codecs.open('./uploads/%04d-%02d-%02d-%02d-%02d-%02d.txt'%(d.year,d.month,d.day,d.hour,d.minute,d.second),'w+','utf-8')
     approot = os.path.dirname(os.path.abspath(__file__))
 except NameError:  # We are the main script, not a module
     approot = os.path.dirname(os.path.abspath(sys.argv[0]))
@@ -30,9 +35,10 @@ class HelloWorld(object):
     @cherrypy.expose
     def check(self,stext =None):
         if (os.path.isfile('./uploads/rep.xml')):
+            logFile.write(u'---%s ;;;; ---%s\r\n ' % ('-'.join(ht()),stext))
             page = ''.join(codecs.open('check.html','r','utf-8').readlines())
-            page = page.replace('{{res}}'.decode("utf-8"),'%s'%','.join(noscann))
-            tree = lxml.etree.parse('./uploads/rep.xml', parser)
+
+
             root = tree.getroot()
             before = [len(scann),len(noscann)]
 
@@ -44,14 +50,15 @@ class HelloWorld(object):
                                 double.append(child.attrib.get('RefNo',''))
                             if  child.attrib.get('status','') == 'noscann' :
                                 scann.append(child.attrib.get('RefNo',''))
-                                noscann.remove(child.attrib.get('RefNo',''))
+                                noscann.count(child.attrib.get('RefNo','')) and noscann.remove(child.attrib.get('RefNo',''))
                                 child.set('status', 'scann')
                                 try:
                                     tree.write('./uploads/rep.xml')
-                                except:
+                                except Exception as err2:
+                                    return err2
                                     pass
                     except Exception as err:
-                        return u'%s'%(stext,err)
+                        return u'%s %s'%(stext,err)
                 if before == [len(scann),len(noscann)]:
                     if error.count(stext)==0:
                         error.append(stext)
@@ -59,11 +66,12 @@ class HelloWorld(object):
 
 
 
-                        
+
             #page = page.replace('{{scan}}'.decode("utf-8"),'%s'%,''.join(scann))
             page = page.replace('{{double}}'.decode("utf-8"),'%s'%','.join(double))
             page = page.replace('{{error}}'.decode("utf-8"),'%s'%','.join(error))
-            page = page.replace('{{current}}'.decode("utf-8"),'%s'%stext)
+            page = page.replace('{{current}}'.decode("utf-8"),'%d/%d'%(len(scann),len(noscann)))
+            page = page.replace('{{res}}'.decode("utf-8"), '%s' % ','.join(noscann))
 
             return page
         return 'А вы загрузили файл ? '
@@ -76,7 +84,9 @@ class HelloWorld(object):
     @cherrypy.expose
     @cherrypy.tools.allow(methods=['POST'])
     def fileloader(self,upl):
+        print '-'.join((ht())) ,type('-'.join((ht())))
         global scann, noscann, error, double
+        logFile.write(u'Пошел процесс загрузки файла %s\r\n '%('-'.join(ht())))
         scann   = []
         noscann = []
         error = []
@@ -86,21 +96,23 @@ class HelloWorld(object):
         
         res = ''
         if myFile==None:
+            logFile.write(u'Загрузка прервалась %s\r\n '%('-'.join(ht())))
             return '-------------'
         while True:
             data = myFile.file.read()
             
             res +=data
             if not data:
+                logFile.write(u'Потеря Дискриптора файла %s\r\n ' % ('-'.join(ht())))
                 break
             size += len(data)
             if data :
+                logFile.write(u'Файл успешно загружен  %s\r\n ' % ('-'.join(ht())))
                 f = open('./uploads/rep.xml','w',)
                 f.write(res)
                 f.close()
-                XML_FILE = open('./uploads/rep.xml','r')
-                tree = ET.ElementTree(file = XML_FILE)
-                
+
+                logFile.write(u'Теперь файл преобразуется %s\r\n ' % ('-'.join(ht())))
                 root = tree.getroot()
                 for child in root.iter():
                     if len(child.attrib)>0:
@@ -113,6 +125,7 @@ class HelloWorld(object):
                         pass
                     pass
                 tree.write('./uploads/rep.xml')
+                logFile.write(u'Преобразованиее закончилось успехом! %s\r\n ' % ('-'.join(ht())))
             pass
         return '200OK'
         
@@ -145,4 +158,5 @@ try:
     webapp = HelloWorld()
     cherrypy.quickstart(webapp, '/', conf)
 except KeyboardInterrupt:
+    logFile.close()
     sys.exit()
