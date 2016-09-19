@@ -40,19 +40,19 @@ class HelloWorld(object):
 
             WeAreSearch = None
             if stext :
-                WeAreSearch = re.findall(u'/?\d{6}/?\d{4}', stext) and re.findall(u'/?\d{6}/?\d{4}', stext)[0].replace('/','')
-                print WeAreSearch
+                WeAreSearch = re.findall(u'/?\d{6}/?\d{4}', stext)
+
                 if len(WeAreSearch)>0:
-                    WeAreSearch =WeAreSearch[0:6] + '/' +WeAreSearch[6:]
-
-
+                    WeAreSearch = WeAreSearch[0].replace('/', '')
+                    WeAreSearch = WeAreSearch[0:6] + '/' +WeAreSearch[6:]
+                    print WeAreSearch
             else:
                 pass
 
 
 
             root = tree.getroot()
-            before = [len(scann),len(noscann)]
+            #before = [len(scann),len(noscann)]
 
             if WeAreSearch:
                 for child in root.iter():
@@ -130,7 +130,7 @@ class HelloWorld(object):
                 logFile.write(u'Теперь файл преобразуется %s\r\n ' % ('-'.join(ht())))
                 root = tree.getroot()
                 for child in root.iter():
-                    if len(child.attrib)>0:
+                    if child.attrib.has_key('RefNo'):
                         if child.attrib.get('status','')=='' or child.attrib.get('status','')=='noscann':
                             child.attrib['status'] = 'noscann'
                             noscann.append(child.attrib.get('RefNo',''))
