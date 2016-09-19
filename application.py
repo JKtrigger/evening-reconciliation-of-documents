@@ -35,17 +35,33 @@ class HelloWorld(object):
     @cherrypy.expose
     def check(self,stext =None):
         if (os.path.isfile('./uploads/rep.xml')):
-            logFile.write(u'---%s ;;;; ---%s\r\n ' % ('-'.join(ht()),stext))
+            logFile.write(u'---%20s ;;;; ---%30s\r\n ' % ('-'.join(ht()),stext))
             page = ''.join(codecs.open('check.html','r','utf-8').readlines())
+
+            WeAreSearch = None
+            if stext :
+                WeAreSearch = re.findall(u'/?\d{6}/?\d{4}', stext) and re.findall(u'/?\d{6}/?\d{4}', stext)[0].replace('/','')
+                print WeAreSearch
+                if len(WeAreSearch)>0:
+                    WeAreSearch =WeAreSearch[0:6] + '/' +WeAreSearch[6:]
+
+
+            else:
+                pass
+
 
 
             root = tree.getroot()
             before = [len(scann),len(noscann)]
 
-            if stext:
+            if WeAreSearch:
                 for child in root.iter():
+                    if child.attrib.has_key('RefNo'):
+                        pass
+                    else:
+                        continue
                     try:
-                        if len(re.findall(u'[A-Z]{4}/\d{6}/%04d/\d{2}'%int(stext), child.attrib.get('RefNo','')))>0:
+                        if len(re.findall(u'[A-Z]{4}/%s/\d{2}'%WeAreSearch, child.attrib.get('RefNo','')))>0:
                             if child.attrib.get('status', '') == 'scann':
                                 double.append(child.attrib.get('RefNo',''))
                             if  child.attrib.get('status','') == 'noscann' :
@@ -55,17 +71,15 @@ class HelloWorld(object):
                                 try:
                                     tree.write('./uploads/rep.xml')
                                 except Exception as err2:
-                                    return err2
+                                    logFile.write(u'---%20s ;;;; ---%30s\r\n ' % ('-'.join(ht()), err2))
                                     pass
                     except Exception as err:
-                        return u'%s %s'%(stext,err)
-                if before == [len(scann),len(noscann)]:
-                    if error.count(stext)==0:
-                        error.append(stext)
-
-
-
-
+                        logFile.write(u'---%20s ;;;; ---%10s;;;; ---%10s\r\n ' % ('-'.join(ht()), stext,err))
+                        pass
+                    pass
+                pass
+            if stext and not WeAreSearch:
+                error.append(stext)
 
             #page = page.replace('{{scan}}'.decode("utf-8"),'%s'%,''.join(scann))
             page = page.replace('{{double}}'.decode("utf-8"),'%s'%','.join(double))
@@ -111,6 +125,7 @@ class HelloWorld(object):
                 f = open('./uploads/rep.xml','w',)
                 f.write(res)
                 f.close()
+                tree = ET.parse('./uploads/rep.xml')
 
                 logFile.write(u'Теперь файл преобразуется %s\r\n ' % ('-'.join(ht())))
                 root = tree.getroot()
