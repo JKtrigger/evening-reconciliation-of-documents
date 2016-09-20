@@ -12,11 +12,13 @@ parser = lxml.etree.XMLParser(recover=True)
 
 import re
 
-global scann , noscann ,error , double
+global scann , noscann ,error , double , unique ,unique_scann
 scann   = []
 noscann = []
 error = []
 double = []
+unique = set()
+unique_scann = set()
 d = datetime.datetime.now()
 ht = lambda :['%02d'%datetime.datetime.now().hour ,'%02d'%datetime.datetime.now().minute,'%02d'%datetime.datetime.now().second]
 try:
@@ -27,11 +29,13 @@ except NameError:  # We are the main script, not a module
     approot = os.path.dirname(os.path.abspath(sys.argv[0]))
 current_dir = approot
 class HelloWorld(object):
-    global scann , noscann ,error , double
+    global scann , noscann ,error , double ,unique ,unique_scann
     scann = []
     noscann = []
     error = []
     double = []
+    unique = set()
+    unique_scann =set()
     @cherrypy.expose
     def check(self,stext =None):
         if (os.path.isfile('./uploads/rep.xml')):
@@ -40,19 +44,19 @@ class HelloWorld(object):
 
             WeAreSearch = None
             if stext :
-                WeAreSearch = re.findall(u'/?\d{6}/?\d{4}', stext)
+                WeAreSearch = re.findall(u'[A-Z]{4}/?\d{6}/?\d{4}', stext)
 
                 if len(WeAreSearch)>0:
                     WeAreSearch = WeAreSearch[0].replace('/', '')
-                    WeAreSearch = WeAreSearch[0:6] + '/' +WeAreSearch[6:]
-                    print WeAreSearch
+                    WeAreSearch = WeAreSearch[0:4] +'/' + WeAreSearch[4:10] + '/' +WeAreSearch[10:]
+
             else:
                 pass
 
 
 
             root = tree.getroot()
-            #before = [len(scann),len(noscann)]
+            before = [len(scann),len(noscann)]
 
             if WeAreSearch:
                 for child in root.iter():
@@ -61,13 +65,16 @@ class HelloWorld(object):
                     else:
                         continue
                     try:
-                        if len(re.findall(u'[A-Z]{4}/%s/\d{2}'%WeAreSearch, child.attrib.get('RefNo','')))>0:
+                        if len(re.findall(u'%s/\d{2}'%WeAreSearch, child.attrib.get('RefNo','')))>0:
                             if child.attrib.get('status', '') == 'scann':
                                 double.append(child.attrib.get('RefNo',''))
                             if  child.attrib.get('status','') == 'noscann' :
                                 scann.append(child.attrib.get('RefNo',''))
                                 noscann.count(child.attrib.get('RefNo','')) and noscann.remove(child.attrib.get('RefNo',''))
                                 child.set('status', 'scann')
+                                if WeAreSearch.replace('/', '') in unique:
+                                    unique.remove(WeAreSearch.replace('/',''))
+                                    unique_scann.add(WeAreSearch.replace('/',''))
                                 try:
                                     tree.write('./uploads/rep.xml')
                                 except Exception as err2:
@@ -80,12 +87,14 @@ class HelloWorld(object):
                 pass
             if stext and not WeAreSearch:
                 error.append(stext)
+            if before == [len(scann),len(noscann)] and stext:
+                error.append(stext)
 
             #page = page.replace('{{scan}}'.decode("utf-8"),'%s'%,''.join(scann))
-            page = page.replace('{{double}}'.decode("utf-8"),'%s'%','.join(double))
-            page = page.replace('{{error}}'.decode("utf-8"),'%s'%','.join(error))
-            page = page.replace('{{current}}'.decode("utf-8"),'%d/%d'%(len(scann),len(noscann)))
-            page = page.replace('{{res}}'.decode("utf-8"), '%s' % ','.join(noscann))
+            page = page.replace('{{double}}'.decode("utf-8"),'%s'%', '.join(double))
+            page = page.replace('{{error}}'.decode("utf-8"),'%s'%', '.join(error))
+            page = page.replace('{{current}}'.decode("utf-8"),'%d/%d   %d/%d'%(len(scann),len(noscann),len(unique_scann),len(unique)))
+            page = page.replace('{{res}}'.decode("utf-8"), '%s' % ', '.join(unique))
 
             return page
         return 'А вы загрузили файл ? '
@@ -99,12 +108,14 @@ class HelloWorld(object):
     @cherrypy.tools.allow(methods=['POST'])
     def fileloader(self,upl):
         print '-'.join((ht())) ,type('-'.join((ht())))
-        global scann, noscann, error, double
+        global scann, noscann, error, double ,unique , unique_scann
         logFile.write(u'Пошел процесс загрузки файла %s\r\n '%('-'.join(ht())))
         scann   = []
         noscann = []
         error = []
         double = []
+        unique = set()
+        unique_scann = set()
         myFile = upl
         size = 0
         
@@ -131,12 +142,16 @@ class HelloWorld(object):
                 root = tree.getroot()
                 for child in root.iter():
                     if child.attrib.has_key('RefNo'):
+                        x = child.attrib['RefNo'].replace('/','')[:-2]
+                        unique.add(x)
                         if child.attrib.get('status','')=='' or child.attrib.get('status','')=='noscann':
                             child.attrib['status'] = 'noscann'
                             noscann.append(child.attrib.get('RefNo',''))
                         if child.attrib.get('status','')=='scann':
                             scann.append(child.attrib.get('RefNo',''))
-
+                            if x in unique:
+                               unique.remove(x)
+                               unique_scann.add(x)
                         pass
                     pass
                 tree.write('./uploads/rep.xml')

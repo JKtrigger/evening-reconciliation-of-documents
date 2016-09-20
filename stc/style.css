@@ -2,6 +2,8 @@
     Simple reset
 --------------------------*/
 
+div {}
+
 .noScann , .Scann , .error , .double , .current {
     background-color: #2E3134;
     padding: 10px 20px 10px;
@@ -14,6 +16,7 @@
     font-size:16px;
     font-weight:bold;
     color:#7f858a;
+    word-wrap: break-word;
 }
 
 
