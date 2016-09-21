@@ -28,7 +28,7 @@ $(function(){
                          .append('<i>' + formatFileSize(data.files[0].size) + '</i>');
 
             // Add the HTML to the UL element
-			$('#upload ul').empty()
+			//$('#upload ul').empty()
             data.context = tpl.appendTo(ul);
 
             // Initialize the knob plugin
