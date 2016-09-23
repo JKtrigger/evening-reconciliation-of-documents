@@ -1,3 +1,29 @@
+/*---------------------------
+Buttons
+--------------------------*/
+button {
+	padding: 30px 10px ; 
+	background-color: transparent ;/*rgba(204, 255, 204,0.85) */;
+	display:block;
+	width:20%;
+	text-align:center;
+	margin: 10px auto;
+	font-size:22px;
+	color: lightblue;
+	border-width:4px;
+	border-color:rgba(204, 255, 204,0.85);
+	transition-delay: 0.2s;
+	transition:  border-radius 0.4s;
+	border-radius:2px;
+	
+	transition: 
+} 
+
+button:hover{
+	border-radius:100%;
+}
+
+
 /*-------------------------
     Simple reset
 --------------------------*/
@@ -24,12 +50,20 @@ div {}
     margin:0;
     padding:0;
 }
-
+ul {
+  list-style-type: none;
+  
+}
+li.mmm {
+	display:inline;
+}
 
 /*-------------------------
     General Styles
 --------------------------*/
-
+#cur{
+	font-size:19px;
+}
 
 html{
     background-color:#ebebec;

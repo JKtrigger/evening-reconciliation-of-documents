@@ -20,7 +20,7 @@ import random
 scann = []
 noscann = []
 error = []
-double = []
+double  = set()
 unique = set()
 unique_scann = set()
 try:
@@ -77,66 +77,73 @@ root2 = tree2.getroot()
 
 class HelloWorld(object):
     @cherrypy.expose
-    def check(self,stext =None):
+    def findMe(self,code = None):
+        host = cherrypy.request.headers.get('Remote-Addr','unknow')
+        logg(u'---%20s ;;;; ---%20s ;;;; ---%20s\r\n ' % ('-'.join(ht()),host,code or '*Empty'))
         if (os.path.isfile('./res/res.xml')):
-            logg(u'---%20s ;;;; ---%30s\r\n ' % ('-'.join(ht()),stext))
-            page = ''.join(codecs.open('check.html','r','utf-8').readlines())
-
-            we_are_search = None
-            if stext :
-                we_are_search = re.findall(u'[A-Z]{4}/?\d{6}/?\d{4}', stext)
-
-                if len(we_are_search)>0:
-                    we_are_search = we_are_search[0].replace('/', '')
-                    we_are_search = '/'.join([we_are_search[0:4], we_are_search[4:10], we_are_search[10:]])
-                    print we_are_search
-
+            pass
+        else:
+            return u'<h1>Так нельзя!</h1><p>И за чем мне проверять файл по адресу ? ./res/res.xml</p><br><p>Когда я вижу, что это провакация</p>'
+        if code:
+            pass
+        else:
+            raise cherrypy.HTTPError("404 Not found",'we are sorry')
+        code_pattern = re.findall(u'[A-Z]{4}/?\d{6}/?\d{4}', code)
+        if len(code_pattern):
+            pass
+        else:
+            error.append(code)
+            return 'error :%s'%code
+        word = code_pattern[0].replace('/','')
+        phrase = '/'.join([word[0:4],word[4:10],word[10:]])
+        root = tree2.getroot()
+        res = ''
+        before = [len(scann),len(noscann)]
+        for child in root.iter():
+            if child.attrib.has_key('RefNo'):
+                pass
             else:
-                pass
+                continue
+            
+           
+            if len(re.findall(u'%s/\d{2}'%phrase, child.attrib.get('RefNo','')))>0:
+                if child.attrib.get('status', '') == 'scann':
+                    double.add(code)
+                    return "double :%s ;"%code
+                
+                if  child.attrib.get('status','') == 'noscann' :
+                    scann.append(child.attrib.get('RefNo',''))
+                    noscann.count(child.attrib.get('RefNo','')) and noscann.remove(child.attrib.get('RefNo',''))
+                    child.set('status', 'scann')
+                    res += "scann :%s ;"%code
+                    if phrase.replace('/', '') in unique:
+                        unique.remove(phrase.replace('/',''))
+                        unique_scann.add(phrase.replace('/',''))
+        if before == [len(scann),len(noscann)]:
+            logg(u'---%20s ;;;; ---%20s ;;;; ---%20s ---НЕ НАЙДЕННО\r\n' % ('-'.join(ht()),host,code))
+            error.append(code)
+            return 'error :%s'%code
+            
+            
+            
+        try:
+            tree2.write('./res/res.xml')
+        except Exception as err2:
+            logg(u'---%20s ;;;; ---%30s\r\n ' % ('-'.join(ht()), err2))
 
-            root = tree2.getroot()
-            before = [len(scann),len(noscann)]
-
-            if we_are_search:
-                for child in root.iter():
-                    if child.attrib.has_key('RefNo'):
-                        pass
-                    else:
-                        continue
-                    try:
-                        if len(re.findall(u'%s/\d{2}'%we_are_search, child.attrib.get('RefNo','')))>0:
-                            if child.attrib.get('status', '') == 'scann':
-                                double.append(child.attrib.get('RefNo',''))
-                            if  child.attrib.get('status','') == 'noscann' :
-                                scann.append(child.attrib.get('RefNo',''))
-                                noscann.count(child.attrib.get('RefNo','')) and noscann.remove(child.attrib.get('RefNo',''))
-                                child.set('status', 'scann')
-                                if we_are_search.replace('/', '') in unique:
-                                    unique.remove(we_are_search.replace('/',''))
-                                    unique_scann.add(we_are_search.replace('/',''))
-                                try:
-                                    tree2.write('./res/res.xml')
-                                except Exception as err2:
-                                    logg(u'---%20s ;;;; ---%30s\r\n ' % ('-'.join(ht()), err2))
-                                    pass
-                    except Exception as err:
-                        logg(u'---%20s ;;;; ---%10s;;;; ---%10s\r\n ' % ('-'.join(ht()), stext,err))
-                        pass
-                    pass
-                pass
-            if stext and not we_are_search:
-                error.append(stext)
-            if before == [len(scann),len(noscann)] and stext:
-                error.append(stext)
-
-
-            page = page.replace('{{double}}'.decode("utf-8"),'%s'%', '.join(double))
-            page = page.replace('{{error}}'.decode("utf-8"),'%s'%', '.join(error))
-            page = page.replace('{{current}}'.decode("utf-8"),'%d/%d   %d/%d'%(len(scann),len(noscann),len(unique_scann),len(unique)))
-            page = page.replace('{{res}}'.decode("utf-8"), '%s' % ', '.join(unique))
-
-            return page
-        return 'А вы загрузили файл ? '
+        res +='lenScann :%s ;lenNocann :%s; lenUniqueScann :%s ; lenSUniqueNocann :%s ;'%(len(scann),len(noscann),len(unique_scann),len(unique))
+        
+        return res
+    @cherrypy.expose
+    def check(self):
+        page = ''.join(codecs.open('check.html','r','utf-8').readlines())
+        page = page.replace('{{double}}'.decode("utf-8"),'%s'%', '.join(double))
+        page = page.replace('{{error}}'.decode("utf-8"),'%s'%', '.join(error))
+        page = page.replace('{{current}}'.decode("utf-8"),'%d/%d   %d/%d'%(len(scann),len(noscann),len(unique_scann),len(unique)))
+        page = page.replace('{{res}}'.decode("utf-8"), '%s' % ', '.join(unique))
+        return page
+        
+        
     
     @cherrypy.expose
     def index(self):
@@ -204,11 +211,10 @@ class HelloWorld(object):
                         pass
                     pass
                 tree.write('./uploads/'+filename)
-
                 tree2.write('./res/res.xml')
                 logg(u'Преобразованиее закончилось успехом! %s\r\n ' % ('-'.join(ht())))
-            pass
-            #
+            
+            
         return '200OK'
         
             
@@ -226,6 +232,10 @@ conf = {
             'tools.sessions.on': True,
             'tools.staticdir.root': os.path.abspath(os.getcwd()),
          },
+        '/findMe': {
+            'tools.sessions.on': True,
+            'tools.staticdir.root': os.path.abspath(os.getcwd()),
+         },
          
 
          '/static': {
@@ -233,7 +243,16 @@ conf = {
              'tools.staticdir.dir': os.path.join(current_dir,'stc'),
             
              
+         },
+        
+        '/img': {
+             'tools.staticdir.on': True,
+             'tools.staticdir.dir': os.path.join(current_dir,'stc'),
+            
+             
          }
+        
+        
 
         }
 try:

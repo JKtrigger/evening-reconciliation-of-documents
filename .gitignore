@@ -1,0 +1,11 @@
+$ cat .gitignore
+/assets333
+/Petrov Defense
+/Installer
+/uploads/*
+/logs/*
+/tcl/*
+/.idea
+*.docx
+*.xls
+*.txt

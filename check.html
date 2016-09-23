@@ -3,7 +3,10 @@
 <head>
 <title>Petrov Defense</title>
 <link href="static/style.css" rel="stylesheet" />
-<script src="https://ajax.googleapis.com/ajax/libs/jquery/1.9.1/jquery.min.js"></script>
+<script src="static/angular.min.js"></script>
+<script src="static/jquery.min.js"></script>
+<script src="static/submit.js"></script>
+
 </head>
 <body>
 
@@ -11,18 +14,24 @@
   <input type="search" id="stext" name="stext" value="" autofocus /></form>
    <div class ='current'>
      <div class="head"><h3>Текущий запрос</h3></div>
-    {{current}}
+    <a id='cur'>{{current}}</a>
    </div>
 
 
-  <div class = 'noScann'><div class="head"><h3>Не отсканено </h3></div>
-  {{res}}
+  <div class = 'noScann'><div class="head"><h3>Не отстканено</h3></div>
+  
+  <div ng-app="myApp" ng-controller="orderCtrl">
+  <button ng-click="sortBy()">Сортировка</button>
+  <ul>
+  <li class ='mmm' ng-repeat="x in refNo | orderBy:'':reversed" id = {{x}}>   {{x}} </li> 
+  </ul>
+</div>
   </div>
   <div class = 'error'><div class="head"><h3>Возможно ошибочно</h3></div>
-  {{error}}
+  <a id='err'>{{error}}</a>
   </div>
   <div class = 'double'><div class="head"><h3>Задвоенно</h3></div>
-  {{double}}
+  <a id='double'>{{double}}</a>
   </div>
 <br><br><br>
 </body>
@@ -30,5 +39,27 @@
            <h2>Технологии в интресах каждого</h2>
         </footer>
 <script>
+function getCookie(name) {
+		var matches = document.cookie.match(new RegExp(
+            "(?:^|; )" + name.replace(/([\.$?*|{}\(\)\[\]\\\/\+^])/g, '\\$1') + "=([^;]*)"
+        ));
+    return matches ? decodeURIComponent(matches[1]) : undefined;
+	}
+c = "{{res}}" ;
+
+var a = getCookie('reversed')==='true'
+
+
+var app = angular.module('myApp', []);
+app.controller('orderCtrl', function($scope) {
+    $scope.refNo = c.replace(/\s/g, "").split(",");
+    $scope.reversed = a ; 
+    $scope.sortBy = function() {
+        $scope.reversed = !$scope.reversed
+		document.cookie = 'reversed='+$scope.reversed
+		$scope.refNo = c.replace(/\s/g, "").split(",");
+		}
+	
+});
 </script>
 </html>
