@@ -20,9 +20,12 @@ import random
 scann = []
 noscann = []
 error = []
+colors = []
+colorpair = {}
 double  = set()
 unique = set()
 unique_scann = set()
+pagecolorserrors = {}
 try:
     copy2('./res/res.xml', './res/lastFile.xml')
 except Exception as er:
@@ -77,6 +80,35 @@ root2 = tree2.getroot()
 
 class HelloWorld(object):
     @cherrypy.expose
+    def colorlogic(self, **kwarg):
+        for i in kwarg:
+            k = kwarg.get(i, "-?-")
+            i = i.replace('color-','')
+            code_pattern = re.findall(u'[A-Z]{4}/?\d{6}/?\d{4}', k)
+            if len(code_pattern):
+                pass
+            else:
+                error.append(k)
+                return 'No one items found'
+            word = code_pattern[0].replace('/', '')
+            print i , colorpair.get(word,"+?+"),word
+            if colorpair.get(word,"+?+")==i:
+                logg(u'---%20s ;;;; ---%20s ;;;; ---%20s\r\n ' % (k,i,u'НАЙДЕН'))
+                self.findMe(code = k)
+                return  '{%s:%s}'%(i, colorpair.get(word,''))
+            else:
+                self.findMe(code=k)
+                logg(u'---%20s ;;;; ---%20s ;;;; ---%20s\r\n ' % (k, i, u'НЕ ТОТ ЦВЕТ'))
+                try:
+                    pagecolorserrors[i].update({k: colorpair.get(word, 'NO COLOR')})
+                except:
+                    logg(u'---%20s ;;;; ---%20s ;;;; ---%20s\r\n ' % (k,u'Либо файл не загружен',u'Либо нет такого номера'))
+
+                return '{%s:%s}'%(k, colorpair.get(word,'---'))
+
+
+        
+    @cherrypy.expose
     def findMe(self,code = None):
         host = cherrypy.request.headers.get('Remote-Addr','unknow')
         logg(u'---%20s ;;;; ---%20s ;;;; ---%20s\r\n ' % ('-'.join(ht()),host,code or '*Empty'))
@@ -110,7 +142,7 @@ class HelloWorld(object):
                 if child.attrib.get('status', '') == 'scann':
                     double.add(code)
                     return "double :%s ;"%code
-                
+
                 if  child.attrib.get('status','') == 'noscann' :
                     scann.append(child.attrib.get('RefNo',''))
                     noscann.count(child.attrib.get('RefNo','')) and noscann.remove(child.attrib.get('RefNo',''))
@@ -144,7 +176,74 @@ class HelloWorld(object):
         return page
         
         
-    
+    @cherrypy.expose
+    def color(self):
+        page = ''.join(codecs.open('color.html','r','utf-8').readlines())
+        tabs = '''<div id="{}" class="tab-pane fade">
+          <h3 class='h3'>{}</h3>
+          <p>{}</p>
+        </div>'''
+        litab = '<li><a data-toggle="tab" href="{}">{}</a></li>'
+
+        inpuut = '''<div class="form-group">
+        <input type="search" value="" class="form-control" name="color-{}" id="id{}" autofocus>
+        </div>
+            <table class="table">
+            <thead>
+            <tr>
+                <th>RefNo</th>
+                <th>colorcode</th>
+            </tr>
+            </thead>
+            <tbody id='tbody-{}'>
+            <h4 class='h4'>{}</h4>
+             </tbody>
+        </table>
+        '''
+        soursesubmit  = '''
+        $('#id%s').keypress(function(event){
+            if (event.keyCode == 13) {
+
+                $.ajax({
+                    url: "./colorlogic",
+			        type:'POST',
+			        data: {'color-%s': $('#id%s').val()},
+	                datatype:'html',
+	                success: function(ans){
+					    var response = ans.replace(/{/g,'').replace(/}/g,'').split(':')
+					    console.log(response,response[0],response[1])
+					    if (response[0] == response[1]) {}
+					    else {
+
+					    $('#tbody-%s').append("<tr><td>" + response[0] + "</td><td>" + response [1] + "</td></tr>")
+					    }
+					}
+
+                })
+                $('#id%s').val('')
+            return true
+
+            }
+
+        })
+        '''
+        
+        tabmenu = ''
+        tabstext = ''
+        submit = ''
+        relload = json.dumps(pagecolorserrors)
+        for i in colors:
+            submit += soursesubmit%(i,i,i,i,i)
+            htmlinput = inpuut.format(i,i,i,i)
+            tabmenu += litab.format('#{}'.format(i),'{}'.format(i))
+            tabstext += tabs.format('{}'.format(i),'{}'.format(i),'{}'.format(htmlinput))
+            
+        page = page.replace('{{litab}}'.decode("utf-8"),tabmenu)
+        page = page.replace('{{color}}'.decode("utf-8"),tabstext)
+        page = page.replace('{{submit}}'.decode("utf-8"),submit)
+        page = page.replace('{{onload}}'.decode("utf-8"), relload)
+        return page
+                       
     @cherrypy.expose
     def index(self):
         page_index = open('index.html','r')
@@ -157,13 +256,6 @@ class HelloWorld(object):
 
         myFile = upl
         filename = ''.join([random.choice('asdfghjkl') for i in range(0, random.randint(20,30))])+'.xml'
-
-
-
-
-
-
-
 
         size = 0
         
@@ -209,7 +301,17 @@ class HelloWorld(object):
                                unique.remove(x)
                                unique_scann.add(x)
                         pass
-                    pass
+                    if child.attrib.has_key('colourcode'):
+                        color = child.attrib['colourcode']
+                        colorpair[x]=color
+                        pagecolorserrors[color]={}
+                        if color in colors:
+                            pass
+                        else:
+                            print color
+                            colors.append(color)
+                            
+                
                 tree.write('./uploads/'+filename)
                 tree2.write('./res/res.xml')
                 logg(u'Преобразованиее закончилось успехом! %s\r\n ' % ('-'.join(ht())))
@@ -236,19 +338,25 @@ conf = {
             'tools.sessions.on': True,
             'tools.staticdir.root': os.path.abspath(os.getcwd()),
          },
-         
+
+        '/color': {
+            'tools.sessions.on': True,
+            'tools.staticdir.root': os.path.abspath(os.getcwd()),
+         },
+
+        '/colorlogic': {
+            'tools.sessions.on': True,
+            'tools.staticdir.root': os.path.abspath(os.getcwd()),
+         },
 
          '/static': {
              'tools.staticdir.on': True,
-             'tools.staticdir.dir': os.path.join(current_dir,'stc'),
-            
-             
+             'tools.staticdir.dir': os.path.join(current_dir,'stc'), 
          },
         
         '/img': {
              'tools.staticdir.on': True,
              'tools.staticdir.dir': os.path.join(current_dir,'stc'),
-            
              
          }
         

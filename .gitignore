@@ -5,6 +5,7 @@ $ cat .gitignore
 /uploads/*
 /logs/*
 /tcl/*
+/res/*
 /.idea
 *.docx
 *.xls
