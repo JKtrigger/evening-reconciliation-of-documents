@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>Petrov Defense</title>
+<meta charset ='utf-8'/>
+  <style>
+
+  input[type="search"]{
+  font-size:19px;
+  height: 50px;
+  }
+  h2.h2,h3.h3,h4.h4 {
+  color:#c1d3d5;
+  }
+  #bg1 {
+
+    background-image: -moz-radial-gradient(center, #ebebec, #2E3134);
+    background-repeat: no-repeat;
+    min-height: 1400px;
+
+    }
+   a[data-toggle]{
+   font-size: 19px;
+   color: #7f858a;
+   background-color: #2E3134;
+   }
+
+  th {
+    background-color: #2E3134;
+    color: white;
+  }
+  tr:hover {background-color: #7f858a;color:#1C548A;}
+  tr:nth-child(even) {
+          color: #C5CCD2;
+          background-color: #15020BCC;}
+  tr:nth-child(odd) {
+          color: #330F0F;
+      background-color: #5381A2;
+      }
+  tr:nth-child(even):hover {background-color: #7f858a;color:#1C548A;}
+  tr:nth-child(odd):hover {background-color: #7f858a;color:#1C548A;}
+
+  </style>
+ <!-- Latest compiled and minified CSS -->
+<link rel="stylesheet" href="static/bootstrap.min.css">
+
+<!-- jQuery library -->
+<script src="static/jquery.min.js"></script>
+
+<!-- Latest compiled JavaScript -->
+<script src="static/bootstrap.min.js"></script>
+</head>
+<body id="bg1">
+
+
+<div class="container">
+
+  <h2 class="h2">Изолированная пешка портит настроение всей доске</h2>
+  <ul class="nav nav-tabs">
+    {{litab}}
+  </ul>
+
+  <div class="tab-content">
+    {{color}}
+  </div>
+</div>
+
+<script>
+$( document ).ready(function() {
+
+  {{submit}}
+  var onloadDoc = '{{onload}}'
+  Jol = JSON.parse(onloadDoc)
+  for (i in Jol){
+    selector='#tbody-' + i
+    for (ii in Jol[i]){
+    $(selector).append("<tr><td>" + ii + "</td><td>" + Jol[i][ii] + "</td></tr>")
+    console.log(Jol[i][ii],ii);
+    }
+}
+  $('input[type="search"]').val('')
+
+});
+</script>
+</body>
+</html>
