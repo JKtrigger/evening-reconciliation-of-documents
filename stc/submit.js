@@ -33,13 +33,13 @@ $( document ).ready(function() {
 						if (ans[i].split(':')[0]=='lenScann'){
 							res1 = ans[i].split(':')[1]
 						}
-						if (ans[i].split(':')[0]=='lenNocann'){
+						if (ans[i].split(':')[0]=='lenNoScann'){
 							res2 = ans[i].split(':')[1]
 						}
 						if (ans[i].split(':')[0]=='lenUniqueScann'){
 							res3 = ans[i].split(':')[1]
 						}
-						if (ans[i].split(':')[0]=='lenSUniqueNocann'){
+						if (ans[i].split(':')[0]=='lenSUniqueNoScann'){
 							res4 = ans[i].split(':')[1]
 						}
 						if (res1 && res2 && res3 && res4){

@@ -1,0 +1,1 @@
+{"colors": ["ALIAN", "BLACK", "WHITE", "RED", "GREEN", "YELLOW", "ORANGE", "PINK", "GOLDEN", "VIOLET", "BLUE"], "categories": [{"values": ["PINK", "GOLDEN", "VIOLET", "BLUE"], "name": "PAWN"}, {"values": ["GREEN", "YELLOW", "ORANGE"], "name": "KNIGHT"}, {"values": ["BLACK", "WHITE", "RED"], "name": "QUEEN"}, {"values": ["ALIAN"], "name": "KING"}]}

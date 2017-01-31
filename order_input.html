@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html>
+    <head>
+    <title>Petrov Defense</title>
+        <meta charset="utf-8">
+
+        <link rel="stylesheet" href="static/bootstrap.min.css">
+
+        <!-- jQuery library -->
+        <script src="static/jquery.min.js"></script>
+        <!-- Latest compiled JavaScript -->
+        <script src="static/bootstrap.min.js"></script>
+        <script src="static/color_loader/loader_categories.js"></script>
+
+    </head>
+    <style>
+    #bg1 {
+
+    background-image: -moz-radial-gradient(center, #ebebec, #2E3134);
+    background-repeat: no-repeat;
+    min-height: 1400px;
+
+    }
+    #list_colors, .panel-body{
+     background-color: transparent;
+    }
+     .h2 {
+  color:#c1d3d5;
+  text-align:center;
+  }
+  p{
+  font-size:18px;
+  }
+  </style>
+    <body id="bg1">
+    <div class = random>
+
+    <p class="h2">Подсказка: До оперции сканирования нужно задать цвета и их категории</p>
+    <p class="h2">Подсказка: Цвета должны назваться так же как и отчете </p>
+    <p class="h2">Подсказка: Кнопка сохранить перезаписывает файл с настройками </p>
+    <p class="h2">Подсказка: Категории выбираются до конца сканирования </p>
+    <p class="h2">Подсказка: Выбранные категории будут одинаковыми для всех сессий </p>
+    <p class="h2">Подсказка: Кнопка сохранения в "группе цветов", проверяет нет ли влюченного цвета в двух или более кагеориях</p>
+    <p class="h2">Подсказка: Кнопка сохранения в "группе цветов", проверяет все ли цвета получили категорию</p>
+    <p class="h2">Стейниц: Только у игрока с инициативой есть право атаковать!</p>
+    </div>
+    <div class="container">
+
+        <!-- Блок настройки Цвета -->
+
+
+        <p><strong>Настройка : </strong><strong>Цвета</strong> - (color code) тип заявлений на визу</p>
+        <div class="panel-group" id="color-codes">
+        <div class="panel panel-default">
+        <div class="panel-heading">
+        <h4 class="panel-title">
+            <a data-toggle="collapse" data-parent="#color-codes" href="#list_colors">Название Цветов</a>
+        </h4>
+        </div>
+        <div id="list_colors" class="panel-collapse collapse">
+            <div class="panel-body" name="colors-controller">
+            <div class="input-group" id="color_list_panel">
+                <span class="input-group-addon">Названия цветов</span>
+                <input id="msg" type="text" class="form-control" name="msg" style="text-transform:uppercase;float:left;width:50%"  placeholder="BLACK">
+                <button type="button" id="color_add_button" class="btn btn-default">Добавить</button>
+            </div><br>
+                <div class="alert alert-info  alert-dismissable" style="width:50%">
+                    <a href="#" class="close" data-dismiss="alert" aria-label="close">&times;</a>
+                    <strong>BLACK</strong>
+                </div>
+                <button type="button" onclick="keep_colors()" class="btn btn-default">Сохранить</button>
+
+
+            </div>
+        </div>
+
+    </div>
+  </div>
+    <!--- Блок настройки Групп --->
+
+    <p><strong>Настройка : </strong><strong>Группа (Категория)</strong> - цвета объениненные в одной категории  </p>
+    <div class="panel-group" id="accordion">
+    <div class="panel panel-default">
+        <div class="panel-heading">
+        <h4 class="panel-title">
+            <div class="input-group" id="color_list_panel">
+            <span class="input-group-addon">Название группы</span>
+            <input  class="form-control" style="text-transform:uppercase;float:left;width:50%"  placeholder="common">
+            </input>
+             <button id="create_new_category" type="button" class="btn btn-default">Создать</button>
+             <button id="loads_categories" type="button" class="btn btn-default">Загрузить</button>
+             <button type="button" data-toggle="collapse"  data-parent="#accordion" href="#collapse1" class="btn btn-default">Показать/Скрыть</button>
+             <button type="button" data-toggle="collapse" id="keep_settings"  data-parent="#accordion" class="btn btn-default" disabled >Сохранить</button>
+            </div>
+        </h4>
+        </div>
+        <div id="collapse1" class="panel-collapse collapse">
+            <div class="panel-body">
+            <!-- Блок подгрупп  -->
+                <table class="table table-striped">
+            <thead>
+            <tr>
+            <th>Название Группы</th>
+            <th>Выбор цветов</th>
+            <th>Действие</th>
+            </tr></thead>
+                    <tbody id="groups_colors">
+
+                </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+  </div>
+</div>
+    </body>
+</html>
